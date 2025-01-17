@@ -85,8 +85,9 @@ stack, and the fixes and workarounds that were applied.
 ### hdf5
 
 - this library is not strictly needed
-- we incorporate a tiny change to enable an additional variant which was
-  requested by an HPE engineer
+- we incorporate a tiny change to enable an additional
+  [variant](recipe/repo/packages/hdf5/package.py#L120) which was requested
+  by an HPE engineer.
 - we keep this here for the same reason as `faiss`
 
 
