@@ -17,9 +17,11 @@ the `spack` stack:
 - `cray-mpich@8.1.30`
 
 The stack is built using `stackinator` with `spack` checked out at commit
-`develop-2025-01-05` (@TODO link github) and uses `gcc@13.2.0` for compilation.
+`develop-2025-01-05` and uses `gcc@13.2.0` for compilation, see
+[recipe/config.yaml](recipe/config.yaml).
 As a consequence of having most packages as part of the stack, the cluster
-configuration becomes much lighter, see also @TODO (file).
+configuration becomes much lighter, see also
+[internal-cxi/packages.yaml](alps-cluster-config/internal-cxi/packages.yaml).
 
 ## Issues and Workarounds
 
@@ -34,7 +36,8 @@ stack, and the fixes and workarounds that were applied.
 - seems to link to the system `cuda` library instead of the one contained in
   the stack (noticed by using `ldd`)
   - potential fix: add configure options forcing `libfabric` to dlopen `cuda`
-    and `gdrcopy` instead - implemented in the repo overrides @TODO link file.
+    and `gdrcopy` instead - implemented in the
+    [recipe's repo](recipe/repo/packages/libfabric/package.py).
 - segfaults at tear-down: crashes and coredumps at the end of `MPI` and/or
   `NCCL` test programs
   - observations: backtrace shows call to `/usr/lib64/libcurl.so` which should
@@ -43,9 +46,10 @@ stack, and the fixes and workarounds that were applied.
     using both libraries causes the segfaults.
   - likely culprit: the `cxi` provider loads symbols from hard-coded `libcurl`
     path even though we are configuring `libfabric` with custom `libcurl`! See
-    this link @TODO
+    this [link](https://github.com/ofiwg/libfabric/blob/091b20b82e06c90ad12a2ba8de58fdc4c521b27b/prov/cxi/src/cxip_curl.c#L180),
+    which was introduced in this [PR](https://github.com/ofiwg/libfabric/pull/10467).
   - workaround: use external, non-buildable `libcurl` (symlink to `/usr/lib64`
-    if it is not there), see this file @TODO
+    if it is not there), see [internal-cxi/packages.yaml](alps-cluster-config/internal-cxi/packages.yaml).
   - the workaround unfortunately re-introduces a system dependency. If the
     upstream `libfabric` can be fixed, then the only remaining system
     dependencies are the default dependencies that `spack` currently requires,
@@ -58,8 +62,8 @@ stack, and the fixes and workarounds that were applied.
 
 #### problems:
 - does not compile on `aarch64` - fixed in version 3 and above
-    - patch available at https://github.com/spack/spack/pull/47846
-    - implemented in the repo @TODO link file
+    - [patch available](https://github.com/spack/spack/pull/47846)
+    - implemented in the [recipe's repo](recipe/repo/packages/libfuse/package.py)
 
 
 ### xpmem
@@ -75,7 +79,7 @@ stack, and the fixes and workarounds that were applied.
 - `python.PythonPipBuilder` was introduced in `spack` recently instead of
   `spack.build_systems.python.PythonPipBuilder` but does not work properly
   - solution: revert to using `spack.build_systems.python.PythonPipBuilder`
-  - implemented in the repo @TODO link file
+  - implemented in the [recipe's repo](recipe/repo/packages/faiss/package.py)
 
 
 ### hdf5
@@ -89,9 +93,10 @@ stack, and the fixes and workarounds that were applied.
 ## Other Stack Components
 
 We have added a bunch of other libraries to the stack for testing (for example
-`pytorch`, see @TODO environments file). These other components do not need to
-be built for trying this stack, of course. Feel free to remove all
-non-essential libraries for quicker build times.
+`pytorch`, see [environments.yaml](recipe/environments.yaml).
+These other components do not need to be built for trying this stack, of
+course. Feel free to remove all non-essential libraries for quicker build
+times.
 
 
 ## Building
