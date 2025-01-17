@@ -37,7 +37,7 @@ stack, and the fixes and workarounds that were applied.
   the stack (noticed by using `ldd`)
   - potential fix: add configure options forcing `libfabric` to dlopen `cuda`
     and `gdrcopy` instead - implemented in the
-    [recipe's repo](recipe/repo/packages/libfabric/package.py).
+    [recipe's repo](recipe/repo/packages/libfabric/package.py#L205).
 - segfaults at tear-down: crashes and coredumps at the end of `MPI` and/or
   `NCCL` test programs
   - observations: backtrace shows call to `/usr/lib64/libcurl.so` which should
