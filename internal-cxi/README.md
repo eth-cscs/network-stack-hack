@@ -49,7 +49,7 @@ stack, and the fixes and workarounds that were applied.
     this [link](https://github.com/ofiwg/libfabric/blob/091b20b82e06c90ad12a2ba8de58fdc4c521b27b/prov/cxi/src/cxip_curl.c#L180),
     which was introduced in this [PR](https://github.com/ofiwg/libfabric/pull/10467).
   - workaround: use external, non-buildable `libcurl` (symlink to `/usr/lib64`
-    if it is not there), see [internal-cxi/packages.yaml](alps-cluster-config/internal-cxi/packages.yaml).
+    if it is not there), see [internal-cxi/packages.yaml](alps-cluster-config/internal-cxi/packages.yaml#L9).
   - the workaround unfortunately re-introduces a system dependency. If the
     upstream `libfabric` can be fixed, then the only remaining system
     dependencies are the default dependencies that `spack` currently requires,
