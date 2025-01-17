@@ -63,7 +63,7 @@ stack, and the fixes and workarounds that were applied.
 #### problems:
 - does not compile on `aarch64` - fixed in version 3 and above
     - [patch available](https://github.com/spack/spack/pull/47846)
-    - implemented in the [recipe's repo](recipe/repo/packages/libfuse/package.py)
+    - implemented in the [recipe's repo](recipe/repo/packages/libfuse/package.py#L96)
 
 
 ### xpmem
