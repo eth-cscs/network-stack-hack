@@ -1,0 +1,95 @@
+FROM docker.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+       apt-get install -y \
+        build-essential \
+        ca-certificates \
+        pkg-config \
+        automake \
+        autoconf \
+        libtool \
+        gdb \
+        strace \
+        wget \
+        git \
+        bzip2 \
+        python3 \
+        libconfig-dev \
+        libuv1-dev \
+        libfuse-dev \
+        libfuse3-dev \
+        libyaml-dev \
+        libnl-3-dev \
+        libnuma-dev \
+        libsensors-dev \
+        libcurl4-openssl-dev \
+        libjson-c-dev \
+        --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/HewlettPackard/shs-cassini-headers.git \
+    && cd shs-cassini-headers \
+    && cp -r include/* /usr/include/ \
+    && cp -r share/* /usr/share/ \
+    && cd .. \
+    && rm -r shs-cassini-headers
+
+RUN git clone https://github.com/HewlettPackard/shs-cxi-driver.git \
+    && cd shs-cxi-driver \
+    && cp -r include/* /usr/include/ \
+    && cd .. \
+    && rm -r shs-cxi-driver
+
+RUN git clone https://github.com/HewlettPackard/shs-libcxi.git \
+    && cd shs-libcxi \
+    && git checkout release/shs-12.0 \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -r shs-libcxi
+
+# Install libfabric
+ARG libfabric_version=2.0.0
+#RUN wget -q https://github.com/ofiwg/libfabric/archive/v${libfabric_version}.tar.gz \
+#    && tar xf v${libfabric_version}.tar.gz \
+#    && cd libfabric-${libfabric_version} \
+RUN git clone https://github.com/ofiwg/libfabric.git \
+    && cd libfabric \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cxi --enable-lnx \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf v${libfabric_version}.tar.gz libfabric-${libfabric_version}
+
+RUN wget -q  https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-5.0.6.tar.gz \
+    && tar xf openmpi-5.0.6.tar.gz \
+    && cd openmpi-5.0.6 \
+    && ./configure --with-ofi=/usr --prefix=/usr --with-cxi --with-slingshot \
+       --with-cuda CFLAGS="-lcuda -lnvidia-ml" \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf openmpi-5.0.6.tar.gz openmpi-5.0.6
+
+RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-7.5.tar.gz \
+    && tar xf osu-micro-benchmarks-7.5.tar.gz \
+    && cd osu-micro-benchmarks-7.5 \
+    && ldconfig /usr/local/cuda/targets/sbsa-linux/lib/stubs \
+    && ./configure --prefix=/usr/local CC=$(which mpicc) CFLAGS="-O3 -lcuda -lnvidia-ml" \
+                   --enable-cuda --with-cuda-include=/usr/local/cuda/include \
+                   --with-cuda-libpath=/usr/local/cuda/lib64 \
+                   CXXFLAGS="-lmpi -lcuda" \ 
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf osu-micro-benchmarks-7.5 osu-micro-benchmarks-7.5.tar.gz
+
+WORKDIR /usr/local/libexec/osu-micro-benchmarks/mpi
