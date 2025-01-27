@@ -1,5 +1,8 @@
 FROM docker.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
 
+ARG OMPI_VER=5.0.6
+ARG GDRCOPY_VER=2.3
+
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
        apt-get install -y \
@@ -27,6 +30,13 @@ RUN apt-get update \
         libjson-c-dev \
         --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone -b v${GDRCOPY_VER} https://github.com/NVIDIA/gdrcopy.git && \
+    cd gdrcopy && \
+    export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} && \
+    make CC=gcc CUDA=$CUDA_PATH lib && \
+    make lib_install && \
+    cd ../ && rm -rf gdrcopy
 
 RUN git clone https://github.com/HewlettPackard/shs-cassini-headers.git \
     && cd shs-cassini-headers \
@@ -60,23 +70,23 @@ ARG libfabric_version=2.0.0
 RUN git clone https://github.com/ofiwg/libfabric.git \
     && cd libfabric \
     && ./autogen.sh \
-    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cxi --enable-lnx \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-cxi --enable-lnx \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
     && cd .. \
     && rm -rf v${libfabric_version}.tar.gz libfabric-${libfabric_version}
 
-RUN wget -q  https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-5.0.6.tar.gz \
-    && tar xf openmpi-5.0.6.tar.gz \
-    && cd openmpi-5.0.6 \
-    && ./configure --with-ofi=/usr --prefix=/usr --with-cxi --with-slingshot \
-       --with-cuda CFLAGS="-lcuda -lnvidia-ml" \
+RUN wget -q  https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_VER}.tar.gz \
+    && tar xf openmpi-${OMPI_VER}.tar.gz \
+    && cd openmpi-${OMPI_VER} \
+    && ./configure --with-ofi=/usr --with-gdrcopy=usr/local --prefix=/usr --with-cxi --with-slingshot \
+       --with-cuda=/usr/local/cuda --with-cuda-libdir=/usr/local/cuda/lib64/stubs \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
     && cd .. \
-    && rm -rf openmpi-5.0.6.tar.gz openmpi-5.0.6
+    && rm -rf openmpi-${OMPI_VER}.tar.gz openmpi-${OMPI_VER}
 
 RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-7.5.tar.gz \
     && tar xf osu-micro-benchmarks-7.5.tar.gz \
