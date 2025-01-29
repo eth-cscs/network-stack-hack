@@ -8,5 +8,10 @@ FI_LNX_PROV_LINKS="shm+cxi"
 #FI_PROVIDER="lnx"
 PMIX_MCA_gds="hash"
 
+# Needed for avoiding the error:
+# [nid005368:228891] shmem: mmap: an error occurred while determining whether or not /tmp/spmix_appdir_23689_117779.3/shared_mem_cuda_pool.nid005368 could be created.
+# [nid005368:228891] create_and_attach: unable to create shared memory BTL coordinating structure :: size 134217728 
+OMPI_MCA_btl_sm_backing_directory="/tmp"
+
 [annotations]
 com.hooks.cxi.enabled="false"

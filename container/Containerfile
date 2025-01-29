@@ -80,7 +80,7 @@ RUN git clone https://github.com/ofiwg/libfabric.git \
 RUN wget -q  https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-${OMPI_VER}.tar.gz \
     && tar xf openmpi-${OMPI_VER}.tar.gz \
     && cd openmpi-${OMPI_VER} \
-    && ./configure --with-ofi=/usr --with-gdrcopy=usr/local --prefix=/usr --with-cxi --with-slingshot \
+    && ./configure --with-ofi=/usr --with-gdrcopy=/usr/local --prefix=/usr --with-cxi --with-slingshot \
        --with-cuda=/usr/local/cuda --with-cuda-libdir=/usr/local/cuda/lib64/stubs \
     && make -j$(nproc) \
     && make install \
