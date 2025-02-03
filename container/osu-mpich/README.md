@@ -4,8 +4,6 @@ Self-sufficient container image with OSU Micro-Benchmarks built on MPICH 4.2.1 w
 
 ## Notes (see also EDF TOML for reference)
 - The image does not require hooks to inject a custom CXI stack from the host
-- Interaction with host PMIx needs to be understood better: environment variables for PSEC and GDS parameters have to be set on Alps to prevent warnings and crashes due to missing components
-- Running a container reuires a hook for bridging the PMIx interface between host and container
 - The image includes also the libfabric LINKx provider for experimentation.
 
 ## Examples
