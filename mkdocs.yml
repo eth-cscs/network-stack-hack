@@ -10,8 +10,14 @@ theme:
     - content.code.copy
     - navigation.tabs
   palette:
-    primary: deep orange
-    accent: deep orange
+    - media:
+      scheme: default
+      primary: white
+      accent: blue
+  logo: assets/cscs-logo.png
+  font:
+    text: Roboto
+    code: Roboto Mono
 markdown_extensions:
   - admonition
   - pymdownx.details
