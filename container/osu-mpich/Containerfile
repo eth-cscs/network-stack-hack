@@ -1,0 +1,110 @@
+FROM docker.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+
+ARG MPI_VER=4.2.1
+ARG GDRCOPY_VER=2.3
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+       apt-get install -y \
+        build-essential \
+        ca-certificates \
+        pkg-config \
+        automake \
+        autoconf \
+        libtool \
+        gdb \
+        strace \
+        wget \
+        git \
+        bzip2 \
+        python3 \
+        rdma-core \
+        libconfig-dev \
+        libuv1-dev \
+        libfuse-dev \
+        libfuse3-dev \
+        libyaml-dev \
+        libnl-3-dev \
+        libnuma-dev \
+        libsensors-dev \
+        libcurl4-openssl-dev \
+        libjson-c-dev \
+        libibverbs-dev \
+        --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 -b v${GDRCOPY_VER} https://github.com/NVIDIA/gdrcopy.git && \
+    cd gdrcopy && \
+    export CUDA_PATH=${CUDA_HOME:-$(echo $(which nvcc) | grep -o '.*cuda')} && \
+    make CC=gcc CUDA=$CUDA_PATH lib && \
+    make lib_install && \
+    cd ../ && rm -rf gdrcopy
+
+RUN git clone --depth 1 https://github.com/HewlettPackard/shs-cassini-headers.git \
+    && cd shs-cassini-headers \
+    && cp -r include/* /usr/include/ \
+    && cp -r share/* /usr/share/ \
+    && cd .. \
+    && rm -r shs-cassini-headers
+
+RUN git clone --depth 1 https://github.com/HewlettPackard/shs-cxi-driver.git \
+    && cd shs-cxi-driver \
+    && cp -r include/* /usr/include/ \
+    && cd .. \
+    && rm -r shs-cxi-driver
+
+RUN git clone --depth 1 https://github.com/HewlettPackard/shs-libcxi.git \
+    && cd shs-libcxi \
+    && git checkout release/shs-12.0 \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -r shs-libcxi
+
+# Install libfabric
+# Libfabric 2.0.0 seems to have a bug preventing compilation of the CXI provider, using main branch for now
+ARG libfabric_version=main
+RUN git clone --depth 1 --branch ${libfabric_version} https://github.com/ofiwg/libfabric.git \
+    && cd libfabric \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --with-cuda=/usr/local/cuda --enable-cuda-dlopen --enable-gdrcopy-dlopen --enable-cxi --enable-lnx --enable-efa \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf libfabric
+
+RUN wget -q https://www.mpich.org/static/downloads/${MPI_VER}/mpich-${MPI_VER}.tar.gz \
+    && tar xf mpich-${MPI_VER}.tar.gz \
+    && cd mpich-${MPI_VER} \
+    && ./autogen.sh \
+    && ./configure --prefix=/usr --enable-fast=O3,ndebug \
+       --disable-fortran --disable-cxx \
+       --with-device=ch4:ofi --with-libfabric=/usr \
+       --with-cuda=/usr/local/cuda \
+       CFLAGS="-L/usr/local/cuda/targets/sbsa-linux/lib/stubs/ -lcuda" \
+       CXXFLAGS="-L/usr/local/cuda/targets/sbsa-linux/lib/stubs/ -lcuda" \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf mpich-${MPI_VER}.tar.gz mpich-${MPI_VER}
+
+RUN wget -q http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-7.5.tar.gz \
+    && tar xf osu-micro-benchmarks-7.5.tar.gz \
+    && cd osu-micro-benchmarks-7.5 \
+    && ldconfig /usr/local/cuda/targets/sbsa-linux/lib/stubs \
+    && ./configure --prefix=/usr/local CC=$(which mpicc) \
+                   CFLAGS="-O3 -lcuda -lnvidia-ml" CXXFLAGS="-lmpi -lcuda" \ 
+                   --enable-cuda --with-cuda-include=/usr/local/cuda/include \
+                   --with-cuda-libpath=/usr/local/cuda/lib64 \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd .. \
+    && rm -rf osu-micro-benchmarks-7.5 osu-micro-benchmarks-7.5.tar.gz
+
+WORKDIR /usr/local/libexec/osu-micro-benchmarks/mpi

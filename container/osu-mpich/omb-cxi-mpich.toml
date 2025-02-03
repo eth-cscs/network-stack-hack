@@ -1,0 +1,10 @@
+image="/capstor/scratch/cscs/amadonna/localhost+omb-cxi-mpich.sqsh"
+writable=true
+entrypoint=false
+
+[env]
+#FI_LNX_PROV_LINKS="shm+cxi"
+FI_PROVIDER="cxi"
+
+[annotations]
+com.hooks.cxi.enabled="false"

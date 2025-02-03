@@ -1,4 +1,4 @@
-# OSU Micro-Benchmarks container with CXI
+# OSU Micro-Benchmarks container with CXI - OpenMPI variant
 
 Self-sufficient container image with OSU Micro-Benchmarks built on OpenMPI 5 with CUDA and CXI (i.e. HPE Slingshot) support.
 
@@ -12,7 +12,7 @@ Self-sufficient container image with OSU Micro-Benchmarks built on OpenMPI 5 wit
 
 - Point-to-point latency
 ```
-[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --environment=omb-cxi ./pt2pt/osu_latency
+[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --environment=omb-cxi-ompi ./pt2pt/osu_latency
 
 # OSU MPI Latency Test v7.5
 # Datatype: MPI_CHAR.
@@ -44,7 +44,7 @@ Self-sufficient container image with OSU Micro-Benchmarks built on OpenMPI 5 wit
 
 - Point-to-point latency with GPU device buffers
 ```
-[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --environment=omb-cxi ./pt2pt/osu_latency D D
+[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --environment=omb-cxi-ompi ./pt2pt/osu_latency D D
 
 # OSU MPI-CUDA Latency Test v7.5
 # Datatype: MPI_CHAR.
@@ -76,7 +76,7 @@ Self-sufficient container image with OSU Micro-Benchmarks built on OpenMPI 5 wit
 
 - All-to-all collective latency, 8 ranks over 2 nodes
 ```
-[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --ntasks-per-node=4 --environment=omb-cxi ./collective/osu_alltoall
+[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --ntasks-per-node=4 --environment=omb-cxi-ompi ./collective/osu_alltoall
 
 # OSU MPI All-to-All Personalized Exchange Latency Test v7.5
 # Datatype: MPI_CHAR.
@@ -106,7 +106,7 @@ Self-sufficient container image with OSU Micro-Benchmarks built on OpenMPI 5 wit
 
 - All-to-all collective latency with GPU buffers, 8 ranks over 2 nodes
 ```
-[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --ntasks-per-node=4 --environment=omb-cxi ./collective/osu_alltoall -d cuda
+[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --ntasks-per-node=4 --environment=omb-cxi-ompi ./collective/osu_alltoall -d cuda
 
 # OSU MPI-CUDA All-to-All Personalized Exchange Latency Test v7.5
 # Datatype: MPI_CHAR.

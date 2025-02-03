@@ -1,0 +1,17 @@
+image="/capstor/scratch/cscs/amadonna/localhost+nv-hpc-bench.sqsh"
+writable=true
+entrypoint=false
+
+[env]
+PMIX_MCA_psec="native"
+FI_PROVIDER="cxi"
+NVSHMEM_REMOTE_TRANSPORT="libfabric"
+NVSHMEM_LIBFABRIC_PROVIDER="cxi"
+NVSHMEM_BOOTSTRAP="MPI"
+NVSHMEM_BOOTSTRAP_PMI="PMIX"
+
+[annotations]
+com.hooks.cxi.enabled="false"
+com.hooks.aws_ofi_nccl.enabled="amad"
+com.hooks.aws_ofi_nccl.variant="cuda12"
+
