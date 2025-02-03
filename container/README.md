@@ -104,11 +104,40 @@ Self-sufficient container image with OSU Micro-Benchmarks built on OpenMPI 5 wit
 1048576               370.06
 ```
 
-## Known issues
-- Collective tests with GPU device buffers still result in a segmentation fault
+- All-to-all collective latency with GPU buffers, 8 ranks over 2 nodes
+```
+[clariden][amadonna@clariden-ln001 ~]$ srun --mpi=pmix -N2 --ntasks-per-node=4 --environment=omb-cxi ./collective/osu_alltoall -d cuda
+
+# OSU MPI-CUDA All-to-All Personalized Exchange Latency Test v7.5
+# Datatype: MPI_CHAR.
+# Size       Avg Latency(us)
+1                      20.66
+2                      20.54
+4                      20.17
+8                      20.23
+16                     20.30
+32                     20.35
+64                     20.31
+128                    19.88
+256                    20.34
+512                    20.40
+1024                   20.43
+2048                   20.39
+4096                   20.84
+8192                   27.38
+16384                  29.20
+32768                  34.30
+65536                  46.62
+131072                 71.60
+262144                111.45
+524288                184.37
+1048576               342.76
+```
+
+## Known issues and limitations
+- The open source libfabric+CXI seems to be noticeably slower to detect CXI devices compared to the custom 1.15.x implementation provided by HPE. This results in longer startup times for jobs.
+
 
 ## TODO
 
 - XPMEM support
-- GDRCopy support
-- EFA provider (requires rdma-core) to make the image usable on AWS 
