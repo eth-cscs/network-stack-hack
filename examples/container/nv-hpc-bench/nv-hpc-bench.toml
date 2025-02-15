@@ -5,10 +5,13 @@ entrypoint=false
 [env]
 PMIX_MCA_psec="native"
 FI_PROVIDER="cxi"
+FI_CXI_DISABLE_HOST_REGISTER="1"
 NVSHMEM_REMOTE_TRANSPORT="libfabric"
 NVSHMEM_LIBFABRIC_PROVIDER="cxi"
 NVSHMEM_BOOTSTRAP="MPI"
 NVSHMEM_BOOTSTRAP_PMI="PMIX"
+NVSHMEM_DISABLE_CUDA_VMM="1"
+
 
 [annotations]
 com.hooks.cxi.enabled="false"
